@@ -1,0 +1,30 @@
+# OpenSpec 配置
+# 规格驱动开发 (SDD) - AI 编码
+# 文档：https://github.com/Fission-AI/OpenSpec
+
+project:
+  name: my-first-project
+  description: 基于 Harness + OpenSpec + Superpowers 方法论初始化的项目
+
+# 工作流配置：default | expanded
+# default: /opsx:explore → /opsx:propose → /opsx:apply → /opsx:archive
+# expanded: 额外包含 /opsx:new, /opsx:continue, /opsx:ff, /opsx:verify, /opsx:bulk-archive, /opsx:onboard
+profile: default
+
+# 规格模式 - 定义规格的结构
+schema:
+  # 需求关键词：SHALL, SHOULD, MAY, MUST
+  requirement_style: rfc2119
+
+# 遥测
+telemetry:
+  enabled: false
+
+# 制品配置
+artifacts:
+  # 规格存放位置（真相来源）
+  specs_dir: openspec/specs
+  # 进行中的变更存放位置
+  changes_dir: openspec/changes
+  # 已归档变更存放位置
+  archive_dir: openspec/changes/archive

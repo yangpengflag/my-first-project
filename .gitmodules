@@ -1,0 +1,6 @@
+[submodule "backend"]
+	path = backend
+	url = D:\\AICode\\backend-temp
+[submodule "frontend"]
+	path = frontend
+	url = D:\\AICode\\frontend-temp
