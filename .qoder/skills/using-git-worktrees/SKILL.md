@@ -1,123 +1,39 @@
 ---
 name: using-git-worktrees
-description: 当需要同时处理多个分支而不切换当前工作目录时使用
+description: 在隔离 worktree 上推进变更，主分支保持干净
+when-to-use: design.md 通过后，进入实现前
 ---
 
-# 使用 Git Worktrees
+# using-git-worktrees
 
-## 概述
+## 为什么
 
-Git worktrees 允许你同时检出多个分支到不同的目录，无需切换当前工作目录。
+- 主分支随时可演示，实验性改动隔离在 worktree。
+- 多个变更可并行推进，不互相污染。
+- 切回主分支不需要 stash。
 
-**核心原则：** 并行工作、隔离环境、高效切换。
+## 标准流程
 
-## 何时使用
+1. **创建 worktree**（变更名与分支名一致）：
+   ```bash
+   git worktree add ../<repo>-<change-name> -b <change-name>
+   cd ../<repo>-<change-name>
+   ```
 
-**适用场景：**
-- 需要在多个分支间快速切换
-- 同时修复多个 bug
-- 审查 PR 时不影响当前工作
-- 并行开发多个功能
+2. **运行项目初始化**：依赖安装、env 准备、跑一遍测试基线。
 
-## 基本命令
+3. **确认绿灯基线**：所有现有测试在新 worktree 里都通过，否则不能开始改。
 
-### 添加 worktree
+4. **开始 TDD 循环**。
 
-```bash
-# 创建新分支并检出
-git worktree add ../feature-branch feature-branch
+5. **完成后**：合并/PR 决策走 `finishing-a-development-branch`（本骨架未单列，由 archive 命令承担）。
 
-# 检出已有分支
-git worktree add ../existing-branch existing-branch
+## 命名约定
 
-# 分离 HEAD 模式（临时工作）
-git worktree add --detach ../temp-work
-```
+- worktree 目录：`../<repo-name>-<change-name>`
+- 分支：与 `openspec/changes/<change-name>/` 同名
 
-### 列出 worktrees
+## 何时**不**用
 
-```bash
-git worktree list
-```
-
-### 移除 worktree
-
-```bash
-# 先删除目录
-rm -rf ../feature-branch
-
-# 然后清理
-git worktree prune
-```
-
-### 在 worktree 中工作
-
-```bash
-cd ../feature-branch
-# 正常工作：修改、提交、推送
-git add .
-git commit -m "fix: ..."
-git push
-```
-
-## 工作流程
-
-### 场景 1：并行修复多个 bug
-
-```bash
-# 主工作目录
-cd ~/project
-git checkout main
-
-# 创建 bug 修复 worktrees
-git worktree add ../bugfix-1 bugfix-1
-git worktree add ../bugfix-2 bugfix-2
-
-# 在不同目录并行工作
-cd ../bugfix-1
-# 修复 bug 1...
-
-cd ../bugfix-2
-# 修复 bug 2...
-```
-
-### 场景 2：审查 PR
-
-```bash
-# 创建 PR 分支的 worktree
-git worktree add ../pr-review pr-branch-name
-
-cd ../pr-review
-# 审查代码、运行测试
-# 不影响主工作目录
-```
-
-### 场景 3：紧急修复
-
-```bash
-# 正在开发功能时接到紧急任务
-git worktree add ../hotfix hotfix-branch
-
-cd ../hotfix
-# 快速修复、部署
-
-# 完成后清理
-cd ~/project
-rm -rf ../hotfix
-git worktree prune
-```
-
-## 注意事项
-
-- worktree 共享 `.git` 目录
-- 不能同时检出同一分支到多个 worktree
-- 删除 worktree 前先确保工作已提交
-- 定期运行 `git worktree prune` 清理
-
-## 常见问题
-
-| 问题 | 解决方案 |
-|------|----------|
-| "branch already checked out" | 使用不同分支名或 --detach |
-| worktree 路径冲突 | 使用唯一目录名 |
-| 清理残留 worktree | `git worktree prune` |
+- 仓库尚未 `git init`：先 init 再说。
+- 单人短周期改动且改动小：直接在主分支也行，但仍需走 OpenSpec 文档流。

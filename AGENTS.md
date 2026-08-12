@@ -17,6 +17,31 @@
 - 项目级 spec：[`openspec/project.md`](openspec/project.md)
 - 当前进行中的变更：`openspec/changes/`
 
+## Submodule 说明
+
+本项目采用 **父仓 + submodule** 结构，`frontend/` 和 `backend/` 是独立的 git 仓库：
+
+### `backend/` — Spring Boot 后端服务
+- **技术栈**：Java 17 + Spring Boot 3.3.x + JPA (Hibernate) + PostgreSQL
+- **包名**：`com.mooc.app`
+- **分层架构**：`controller/` → `service/` → `repository/` → `entity/` → `dto/`
+- **启动命令**：`mvn -f backend/pom.xml spring-boot:run`
+- **测试命令**：`mvn -f backend/pom.xml test`
+- **编码规约**：[`.qoder/rules/backend-conventions.md`](.qoder/rules/backend-conventions.md)
+
+### `frontend/` — Next.js 前端应用
+- **技术栈**：Next.js 16 (App Router) + React 19 + TypeScript 5
+- **样式**：Tailwind CSS 4 + shadcn/ui (base-nova) + lucide-react
+- **状态管理**：Zustand
+- **测试**：Vitest + React Testing Library
+- **目录入口**：`frontend/app/`（页面），`frontend/components/`（共享组件），`frontend/lib/`（工具/状态）
+- **编码规约**：[`.qoder/rules/frontend-conventions.md`](.qoder/rules/frontend-conventions.md)
+
+### Submodule 操作规范
+- 进入子仓执行 git 操作：`cd backend && git add . && git commit -m "..."`
+- 父仓只记录 submodule 指针更新：`git add backend frontend && git commit -m "update submodule pointers"`
+- 克隆后需初始化子仓：`git submodule update --init --recursive`
+
 ## 第一次使用
 
 本项目用 `openspec init --tools qoder` 初始化，斜杠命令由 OpenSpec CLI 提供：
