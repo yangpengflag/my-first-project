@@ -1,3 +1,14 @@
+## 双 IDE 适配说明（Qoder / CodeBuddy）
+
+本项目同时适配 **Qoder** 与 **CodeBuddy** 两款 AI IDE。两者的 Harness 配置与 OpenSpec 产物**内容完全镜像**，仅目录名不同：
+
+| 用途 | Qoder 路径 | CodeBuddy 路径 |
+|------|-----------|---------------|
+| 规则 / 命令 / skills / agents | `.qoder/` | `.codebuddy/` |
+| OpenSpec 产物（真相来源） | `openspec/`（两者共用，无差异） | 同左 |
+
+> 约定：两 IDE 的 Harness 配置内容一致；改一处须同步另一处。后续小节若出现 `<harness>/` 占位符，按你的 IDE 替换为 `.qoder/`（Qoder）或 `.codebuddy/`（CodeBuddy）。
+
 ## 硬规则（不可违反）
 
 1. **任何代码改动前必须先走 OpenSpec 流程**：在父仓 `openspec/changes/<change-name>/` 下产出 `proposal.md` → `design.md` → `tasks.md`，人类签字后才动 submodule 内的代码。
@@ -8,34 +19,36 @@
 
 ## 快速入口
 
-- 编码规约：[`.qoder/rules/coding-conventions.md`](.qoder/rules/coding-conventions.md)
-- 工作流规则：[`.qoder/rules/spec-driven-workflow.md`](.qoder/rules/spec-driven-workflow.md)
-- OpenSpec 官方命令：`.qoder/commands/opsx/{propose,apply,archive,explore}.md`
-- OpenSpec 官方 skills：`.qoder/skills/openspec-{propose,apply-change,archive-change,explore}/SKILL.md`
-- Superpowers skills：`.qoder/skills/{brainstorming,writing-plans,executing-plans,test-driven-development,subagent-driven-development,using-git-worktrees,requesting-code-review,verification-before-completion}/SKILL.md`
-- OpenSpec 配置：[`openspec/config.yaml`](openspec/config.yaml)
-- 项目级 spec：[`openspec/project.md`](openspec/project.md)
-- 当前进行中的变更：`openspec/changes/`
+| 资源 | Qoder 路径 | CodeBuddy 路径 |
+|------|-----------|---------------|
+| 编码规约 | `.qoder/rules/coding-conventions.md` | `.codebuddy/rules/coding-conventions.md` |
+| 工作流规则 | `.qoder/rules/spec-driven-workflow.md` | `.codebuddy/rules/spec-driven-workflow.md` |
+| 后端编码规约 | `.qoder/rules/backend-conventions.md` | `.codebuddy/rules/backend-conventions.md` |
+| 前端编码规约 | `.qoder/rules/frontend-conventions.md` | `.codebuddy/rules/frontend-conventions.md` |
+| OpenSpec 官方命令 | `.qoder/commands/opsx/{propose,apply,archive,explore}.md` | `.codebuddy/commands/opsx/{propose,apply,archive,explore}.md` |
+| OpenSpec 官方 skills | `.qoder/skills/openspec-{propose,apply-change,archive-change,explore}/SKILL.md` | `.codebuddy/skills/openspec-{propose,apply-change,archive-change,explore}/SKILL.md` |
+| Superpowers skills | `.qoder/skills/{brainstorming,writing-plans,executing-plans,test-driven-development,subagent-driven-development,using-git-worktrees,requesting-code-review,verification-before-completion}/SKILL.md` | `.codebuddy/skills/{brainstorming,writing-plans,executing-plans,test-driven-development,subagent-driven-development,using-git-worktrees,requesting-code-review,verification-before-completion}/SKILL.md` |
+| OpenSpec 配置 | [`openspec/config.yaml`](openspec/config.yaml) | [`openspec/config.yaml`](openspec/config.yaml) |
+| 项目级 spec | [`openspec/project.md`](openspec/project.md) | [`openspec/project.md`](openspec/project.md) |
+| 当前进行中的变更 | `openspec/changes/` | `openspec/changes/` |
 
 ## Submodule 说明
 
 本项目采用 **父仓 + submodule** 结构，`frontend/` 和 `backend/` 是独立的 git 仓库：
 
-### `backend/` — Spring Boot 后端服务
-- **技术栈**：Java 17 + Spring Boot 3.3.x + JPA (Hibernate) + PostgreSQL
-- **包名**：`com.mooc.app`
+### `backend/` — 后端服务
+- **技术栈**：以 `openspec/project.md` 当前约束为准（见项目 spec）
 - **分层架构**：`controller/` → `service/` → `repository/` → `entity/` → `dto/`
-- **启动命令**：`mvn -f backend/pom.xml spring-boot:run`
-- **测试命令**：`mvn -f backend/pom.xml test`
-- **编码规约**：[`.qoder/rules/backend-conventions.md`](.qoder/rules/backend-conventions.md)
+- **启动 / 测试命令**：以子仓实际构建工具为准（如 Maven 或 NestJS）
+- **编码规约**：`<harness>/rules/backend-conventions.md`
 
-### `frontend/` — Next.js 前端应用
-- **技术栈**：Next.js 16 (App Router) + React 19 + TypeScript 5
+### `frontend/` — 前端应用
+- **技术栈**：以 `openspec/project.md` 当前约束为准（见项目 spec）
 - **样式**：Tailwind CSS 4 + shadcn/ui (base-nova) + lucide-react
 - **状态管理**：Zustand
 - **测试**：Vitest + React Testing Library
 - **目录入口**：`frontend/app/`（页面），`frontend/components/`（共享组件），`frontend/lib/`（工具/状态）
-- **编码规约**：[`.qoder/rules/frontend-conventions.md`](.qoder/rules/frontend-conventions.md)
+- **编码规约**：`<harness>/rules/frontend-conventions.md`
 
 ### Submodule 操作规范
 - 进入子仓执行 git 操作：`cd backend && git add . && git commit -m "..."`
@@ -44,11 +57,18 @@
 
 ## 第一次使用
 
-本项目用 `openspec init --tools qoder` 初始化，斜杠命令由 OpenSpec CLI 提供：
+两种 IDE 的 OpenSpec 初始化命令任选其一即可（`openspec/` 产物两 IDE 通用）：
 
-- `/opsx:propose <idea>` — 创建变更（生成 proposal/design/tasks）
-- `/opsx:apply` — 按 tasks.md 推进实现（走 superpowers 的 TDD skill）
-- `/opsx:archive` — 归档完成的变更
-- `/opsx:explore` — 浏览已有 specs 与 changes
+```bash
+openspec init --tools qoder      # Qoder
+openspec init --tools codebuddy  # CodeBuddy
+```
 
-> 重启 Qoder 让斜杠命令生效。
+| 命令 | 作用 |
+|------|------|
+| `/opsx:propose <idea>` | 创建变更（生成 proposal/design/tasks） |
+| `/opsx:apply` | 按 tasks.md 推进实现（走 superpowers 的 TDD skill） |
+| `/opsx:archive` | 归档完成的变更 |
+| `/opsx:explore` | 浏览已有 specs 与 changes |
+
+> 切换 IDE 后如遇斜杠命令未生效，重启 **当前使用的 IDE**（Qoder 或 CodeBuddy）让命令加载即可；无需重复初始化。

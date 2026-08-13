@@ -1,0 +1,197 @@
+{
+  "summary": {
+    "projectName": "my-first-project",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 26,
+    "overview": "项目配置了丰富的 Harness 资产（8 条规则、12 个 Skills、4 个命令、8 个自定义 Agent），但零会话观测数据无法验证这些资产的实际效果；同时存在一个 Agent 资产结构缺陷和自动化自动化缺口。",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Rules",
+        "Skills",
+        "Commands",
+        "Custom Agents"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 8,
+          "paths": [
+            ".qoder/rules/api-conventions.md",
+            ".qoder/rules/backend-conventions.md",
+            ".qoder/rules/coding-conventions.md",
+            ".qoder/rules/database-conventions.md",
+            ".qoder/rules/frontend-conventions.md",
+            ".qoder/rules/spec-driven-workflow.md",
+            ".qoder/rules/styling-conventions.md",
+            "AGENTS.md"
+          ]
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Project"
+          ],
+          "count": 12,
+          "paths": [
+            ".qoder/skills/brainstorming/SKILL.md",
+            ".qoder/skills/executing-plans/SKILL.md",
+            ".qoder/skills/openspec-apply-change/SKILL.md",
+            ".qoder/skills/openspec-archive-change/SKILL.md",
+            ".qoder/skills/openspec-explore/SKILL.md",
+            ".qoder/skills/openspec-propose/SKILL.md",
+            ".qoder/skills/requesting-code-review/SKILL.md",
+            ".qoder/skills/subagent-driven-development/SKILL.md",
+            ".qoder/skills/test-driven-development/SKILL.md",
+            ".qoder/skills/using-git-worktrees/SKILL.md",
+            ".qoder/skills/verification-before-completion/SKILL.md",
+            ".qoder/skills/writing-plans/SKILL.md"
+          ]
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Project"
+          ],
+          "count": 4,
+          "paths": [
+            ".qoder/commands/opsx/apply.md",
+            ".qoder/commands/opsx/archive.md",
+            ".qoder/commands/opsx/explore.md",
+            ".qoder/commands/opsx/propose.md"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 8,
+          "paths": [
+            ".qoder/agents/backend-agent.md",
+            ".qoder/agents/experience-agent.md",
+            ".qoder/agents/frontend-agent.md",
+            ".qoder/agents/interaction-agent.md",
+            ".qoder/agents/product-manager.md",
+            ".qoder/agents/README.md",
+            ".qoder/agents/spec-reviewer.md",
+            ".qoder/agents/test-agent.md"
+          ]
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 0
+        }
+      ],
+      "repositorySourceRows": []
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 68,
+        "summary": "AGENTS.md 与 7 条编码规约定义了清晰的任务边界和 OpenSpec 工作流，但零会话观测无法验证 Agent 是否实际遵循。",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 55,
+        "summary": "4 个 OpenSpec 命令和 12 个 Skills 提供了可发现的操作入口，但无 Hook 自动化且无观测证据证明这些入口被实际调用。",
+        "findingRefs": [
+          "agent-readme-missing-frontmatter",
+          "workflow-automation-gap"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 42,
+        "summary": "规约明确要求 TDD（RED → GREEN → REFACTOR），但零会话证据显示验证行为实际发生；无 CI Hook 或自动化验证门。",
+        "findingRefs": [
+          "workflow-automation-gap"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 38,
+        "summary": "Spec-driven 工作流定义了从 propose 到 archive 的完整生命周期，但无观测证据证明任何变更走完该流程。",
+        "findingRefs": []
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 35,
+        "summary": "无会话观测数据，无法评估学习循环；项目级 Memory 为零，无纵向改进证据。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "agent-readme-missing-frontmatter",
+      "title": "Agent 目录中的 README.md 缺少 Custom Agent frontmatter，导致资产清单虚增",
+      "severity": "Medium",
+      "reason": ".qoder/agents/README.md 被 Agent 资产 linter 识别为一个 Custom Agent（计入 8 个 Agent 之一），但它缺少必要的 frontmatter 元数据。这导致 Agent 清单计数不准确（实际功能性 Agent 为 7 个），且可能在 Agent 路由或解析时产生意外行为。该问题来源于 agent-lint 的 error 级别发现。",
+      "expectedOutput": [
+        "Update the existing Agent owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Agent",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为 .qoder/agents/README.md 添加正确的 Custom Agent frontmatter，或将其移出 agents/ 目录以消除清单虚增。\n\n## Validation\n\n- 重新运行 Agent 资产 lint 确认 error 已消除\n- 确认 Custom Agent 计数反映实际功能性 Agent 数量",
+      "dimensionRefs": [
+        "controlled-execution"
+      ]
+    },
+    {
+      "id": "workflow-automation-gap",
+      "title": "Spec-driven 工作流依赖手动遵循，无 Hook 自动化保障关键步骤不被跳过",
+      "severity": "Medium",
+      "reason": "项目配置了 32 个 Harness 资产（8 规则 + 12 Skills + 4 命令 + 8 Agent），定义了完整的 OpenSpec 工作流（brainstorming → propose → design → tasks → TDD → review → archive）。但 Hooks 数量为零，意味着没有任何自动化机制来确保 Agent 在修改 src/ 前必须先走 OpenSpec 流程、必须先写失败测试、或必须在提交前运行 code review。coding-conventions.md 明确要求 TDD 不可绕过，spec-driven-workflow.md 声明'任何涉及 src/ 改动的请求必须按下列顺序推进'——但这些约束完全依赖 Agent 的自律而非系统级保障。",
+      "expectedOutput": [
+        "Update the existing Hook owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Hook",
+      "aiFixPrompt": "/better-harness fix this issue\n\n评估并为关键工作流节点添加 Hook 自动化，至少覆盖：1) 代码变更前检查 OpenSpec 产物是否存在；2) 提交前验证测试是否通过。\n\n## Validation\n\n- 确认 Hook 配置不破坏现有工作流\n- 验证 Hook 能在正确的触发点执行检查",
+      "dimensionRefs": [
+        "controlled-execution",
+        "change-validation"
+      ]
+    }
+  ]
+}
