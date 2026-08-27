@@ -1,47 +1,127 @@
 # Project Spec
 
+> 项目级根 spec。所有 `specs/` 与 `changes/` 都建立在本文件描述的上下文之上。
+
 ## 项目名称
 
-> my-first-project
+Wanderchina
 
 ## 愿景
 
-> 基于 Java Spring Boot + Vue 3 的全栈 Web 应用开发框架，采用 submodule 模式管理前后端代码。
+> 让境外旅行者发现旅行指南之外的中国。
+>
+> Wanderchina 是一个面向境外用户的入境中国旅游目的地探索平台。
+> 通过城市导览、深度攻略、小众景点与 AI 行程规划，
+> 帮助非中国用户规划并发现"明信片之外"的中国旅行体验。
+>
+> 对标：Visit Japan / Tourism New Zealand / Discover Vietnam 等国际目的地营销站。
 
 ## 范围（in scope）
 
-- 后端：Java 17 + Spring Boot 3.5.16 + Maven 骨架
-- 前端：Vue 3 + Vite + TypeScript 骨架
-- 仓库结构：父仓管理 OpenSpec 产物，backend/ 和 frontend/ 作为 git submodule
-- AI agent 驱动的结构化开发工作流（OpenSpec + Superpowers）
+- **城市导览**：中国主要旅游城市卡片，含地理信息、最佳季节、概览描述。
+- **旅行攻略**：英文深度游记 / 路线攻略，含标题、封面图、标签、摘要。
+- **小众景点推荐**：非常规目的地推荐（Off-the-Beaten-Path Spots），强调深度体验。
+- **AI 行程规划助手**：常驻式 AI 入口（跨页面），辅助用户生成行程、回答旅行问题。
+- **用户模块**：
+  - **个人中心**：用户查看与编辑头像、昵称、个人简介、兴趣标签；他人公开资料页。
+  - **消息通知**：互动通知系统（被点赞、被评论、被收藏），已读/未读标记，导航栏未读计数。
+  - **站内信**：用户间一对一私信，会话列表与消息历史，未读消息提醒。
+- **内容语言策略**：英文为主、中文为辅——标题 / 导航 / CTA 全英文，内容卡片英文主标题 + 中文地名副标。
+- **后端 HTTP API**：Spring Boot 提供城市 / 攻略 / 景点 / 用户的 CRUD 与搜索接口，供前端 SSR 预取。
+- **部署形态**：前端 Vercel / 后端 Docker 自托管。
 
 ## 非目标（out of scope）
 
-- 业务逻辑代码（骨架只包含脚手架默认文件）
-- CI/CD、Docker 配置
-- 数据库集成
-- 前后端联调（API 代理 / CORS）
+- **OTA 交易**：本期不做机票 / 酒店 / 门票预订与支付，但不排除后续版本。
+- **社交图谱**：不做关注 / 粉丝 / 好友关系链，不做用户 Feed 流（帖子/评论/收藏/私信已在范围内）。
+- **中文用户主界面**：当前产品定位面向境外用户，中文 UI 版本不在本期范围内。
+- **移动端 App**：仅提供响应式 Web 端，不开发 iOS / Android 原生 App。
+- **实时地图**：不内嵌交互式地图（仅展示静态位置信息 + 外链跳转至 Google Maps / 高德）。
+- **后端内容管理系统**：本期内容以硬编码 / 数据库种子数据为主，不搭建 CMS 后台。
+- **消息推送**：不做邮件 / 浏览器推送通知，仅站内提醒（通知 + 私信 badge）。
 
 ## 关键术语
 
-| 术语 | 定义 |
-|------|------|
-| 父仓 | my-first-project 根仓库，管理 OpenSpec 产物 |
-| 子仓 | backend/ 和 frontend/，各自独立的 git 仓库 |
-| OpenSpec | 规格驱动开发流程层 |
-| Harness | IDE 原生配置层（.qoder/） |
-| Superpowers | 开发方法论层（skills/） |
+| 术语 | 含义 |
+|---|---|
+| Region Slot | 首页内容区块插槽的统称，由 `homepage-layout` 定义挂载契约（props：`hero` / `platformNav` / `destinations` / `community` / `aiFab`）。当前 `hero` 已实现并联调，`platformNav`/`destinations`/`community`/`aiFab` 待各自 change 实现 |
+| City Card | 城市导览卡片，`destinations` 区块的核心 UI 单元，含城市名、封面图、简要描述 |
+| Story | 旅行攻略条目，`community`/`hot-posts` 区块展示，含标题 / 封面图 / 摘要 / 标签 |
+| Hidden Spot | 小众景点，`hot-spots` 区块展示，强调深度 / 非旅游团体验 |
+| AI Launcher | AI 行程助手入口悬浮按钮（aiFab），跨页面常驻于 layout，点击后打开对话界面 |
+| BFF | Browser-For-Frontend，前端 Next.js 薄层，负责 SSR 预取与接口聚合，不承担业务逻辑。当前尚未实现（`frontend/lib/backend.ts` 缺失，首页未接入后端） |
+| Capability Spec | OpenSpec 体系中一个独立能力单元的规格文档，对应 `openspec/specs/<capability>/spec.md` |
+| Notification | 互动通知条目，记录他人对当前用户内容的点赞/评论/收藏行为 |
+| Conversation | 站内信会话，两用户之间唯一的私信通道 |
+| Message | 站内信消息，属于某个 Conversation，含发送者、内容、已读状态 |
 
-## 约束
+## 技术栈
 
-- 后端：Java 17 + Spring Boot 3.5.16 + Maven
-- 前端：Vue 3 + Vite + TypeScript
-- IDE：Qoder（.qoder/ 配置目录）
-- 工作流：OpenSpec spec-driven，TDD 强制
+本项目使用前后端分离架构。后端 Spring Boot 负责业务 HTTP API；前端 Next.js 同时承担 UI 与薄 BFF（SSR 预取 / 接口聚合 / 字段裁剪 / 缓存读），**业务逻辑一律在后端**。
 
-## 成功标准
+| 维度 | 选型 | 说明 |
+|---|---|---|
+| 语言 | Java 17 (Corretto) | 与 Spring Boot 3.x 兼容下限 |
+| 后端框架 | Spring Boot 3.5.16 | spring-boot-starter-web |
+| 后端构建 | Maven 单模块 (`backend/pom.xml`) | groupId `com.mooc`、artifactId `backend`、打包 jar |
+| 后端测试 | JUnit 5 + Spring Boot Test (`@WebMvcTest`) | 切片测试为主，避免全量上下文 |
+| 前端框架 | React 18.3.1 + Next.js 14.2.35 (App Router) + TypeScript 5 | 薄 BFF 路由：`app/page.tsx` Server Component 预取 |
+| 前端样式 | Tailwind CSS 4 + shadcn/ui (base-nova / neutral) + lucide-react | shadcn 提供 a11y / 设计 token / Radix 实现；lucide 统一图标 |
+| 前端构建 | Next.js 14 内建 (`frontend/`) | dev server 起于 3000（8080 为后端，被占时自动 fallback 到下一个可用端口） |
+| 前端测试 | Vitest + @testing-library/react + jsdom | Server Component 不可直接 render，需抽为 Client Component 后覆盖 |
+| BFF 调用 | **尚未实现** | 规划为 `frontend/lib/backend.ts`（`import 'server-only'`），Server Component 中用 `fetchFromBackend('/api/...')` 调后端；当前首页 `app/page.tsx` 未接入后端，Hero 联调仅用占位回调 |
+| 环境变量 | `frontend/.env.local`（不入仓） | `BACKEND_URL=http://localhost:8080` |
+| Node 运行时 | Node.js ≥ 20.19 | Next.js 14 要求 |
 
-- `cd backend && mvn test` 通过
-- `cd frontend && npm run build` 通过
-- 父仓 `git submodule status` 显示两个子仓正常
-- AI agent 可通过 `/opsx:propose` 开始新变更
+变更记录见 `openspec/changes/archive/`。
+
+## OpenSpec Conventions
+
+本项目对 OpenSpec 工作流的额外约定（与 OpenSpec 官方 schema 兼容，但补充粒度规则）：
+
+### Capability 粒度：每 change 一个 capability（精细粒度）
+
+- 每个 OpenSpec change 对应**一个独立 capability**，命名与 change 名一致（kebab-case）。
+- 例：change `frontend-styling-stack` → capability `frontend-styling`；change `homepage-shell` → capability `homepage-shell`。
+- 选这个粒度的理由：archive 时 `openspec/specs/<capability>/spec.md` 各归各位、零冲突，支持 6+ 个区块 change 并行 apply。
+- 不建议把多个 change 写到同一个 capability（会让 archive merge 时反复编辑同一文件，增加冲突面）。
+
+### `openspec/notes/` 的角色
+
+- `openspec/notes/<topic>/<name>.md` 存放**人类可读的工程 brief**——结构化但非 OpenSpec schema 格式（如 4 章节中文模板：边界 / 场景 / 数据结构 / Acceptance）。
+- OpenSpec CLI **不会**扫到 `notes/`，仅 `specs/` 与 `changes/` 进入工作流。
+- brief 用途：propose 阶段作为 LLM 上下文喂入；review 阶段作为团队对齐文档；不参与 archive 合入。
+- 与 `openspec/specs/<capability>/spec.md`（capability 主索引，由 archive 自然填充）严格分工。
+
+### Change 与 brief 的对照
+
+| Change | Brief 路径 |
+|---|---|
+| `frontend-styling-stack` | `openspec/notes/homepage/frontend-styling-stack.md` |
+| `homepage-shell` | `openspec/notes/homepage/homepage-shell.md` |
+| `homepage-hero` | `openspec/notes/homepage/homepage-hero.md` |
+| `homepage-feature-nav` | `openspec/notes/homepage/homepage-feature-nav.md` |
+| `homepage-city-grid` | `openspec/notes/homepage/homepage-city-grid.md` |
+| `homepage-hot-posts` | `openspec/notes/homepage/homepage-hot-posts.md` |
+| `homepage-hot-spots` | `openspec/notes/homepage/homepage-hot-spots.md` |
+| `homepage-ai-launcher` | `openspec/notes/homepage/homepage-ai-launcher.md` |
+
+## 质量底线
+
+- 所有改动走 TDD（见 `.qoder/skills/test-driven-development/` 或 `.codebuddy/skills/test-driven-development/`）。
+- 主分支测试始终绿灯。
+- 公开 API 改动必须先有对应 spec 更新。
+
+## 维护
+
+本文件每次 `/archive` 时检查是否需要更新。重大变化在对应 change 的 `design.md` 中写理由。
+
+### 变更记录
+
+- **2026-08-27 事实修正**：同步真实技术栈与现状，修正了若干与代码实际不符的描述：
+  - 后端 Spring Boot 由 `3.3.5` 更正为 `3.5.16`；Maven artifactId 由 `app` 更正为 `backend`。
+  - 前端框架由 "React 19 + Next.js 16" 更正为 "React 18.3.1 + Next.js 14.2.35"（React 19 需 Next 15，Next 14 强制 peer 为 React 18；偏差已在 `scaffold-nextjs-frontend` change 记录）。
+  - 前端测试环境由 `happy-dom` 更正为 `jsdom`（与 `package.json` / `vitest.config.ts` 一致）。
+  - BFF 层标记为"尚未实现"：真实代码 `frontend/lib/` 仅有 `utils.ts`，`app/page.tsx` 未接入后端，Hero 联调用占位回调。
+  - 修正 `springboot-skeleton.md` spec 中残留的 "Vue 3 + Vite 前端骨架" 错误描述（已由 `frontend-nextjs-scaffold` spec 取代）。
+  - 术语表 Region Slot 命名同步为 `homepage-layout` 实际插槽（`hero` / `platformNav` / `destinations` / `community` / `aiFab`）。

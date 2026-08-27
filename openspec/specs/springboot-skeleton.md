@@ -1,4 +1,6 @@
-# 前后端骨架规格
+# 后端骨架规格
+
+> 前端栈定义见 `frontend-nextjs-scaffold` spec（Next.js 14 + React 18 + TypeScript）。本文件只规定后端骨架与 submodule 管理。
 
 ## Requirement: 后端骨架
 
@@ -12,19 +14,6 @@
 ### Scenario: 后端测试
 - **WHEN** 开发者执行 `mvn test`
 - **THEN** 所有默认测试通过
-
-## Requirement: 前端骨架
-
-项目 SHALL 提供基于 Vue 3 + Vite + TypeScript 的前端骨架，通过 submodule 独立管理。
-
-### Scenario: 开发者启动前端
-- **WHEN** 开发者进入 `frontend/` 目录
-- **THEN** 可执行 `npm install` 安装依赖
-- **AND** 可执行 `npm run dev` 启动开发服务器
-
-### Scenario: 前端构建
-- **WHEN** 开发者执行 `npm run build`
-- **THEN** 构建产物输出到 `dist/` 目录
 
 ## Requirement: Submodule 管理
 

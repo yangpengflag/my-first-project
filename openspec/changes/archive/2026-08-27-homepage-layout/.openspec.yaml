@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-27
+goal: Deliver an independently testable homepage layout shell per
+  specs/homepage-layout.md, enabling Hero and subsequent regions to compose.
