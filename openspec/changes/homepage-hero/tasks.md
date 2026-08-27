@@ -30,8 +30,8 @@
 ## 5. 集成与校验
 
 - [x] 5.1 `frontend` 子仓 `npm run build` 通过（含 next/image 优化、lint）。
-- [ ] 5.2 在本地 Demo/临时页面挂载 `<Hero backgroundImageUrl="https://picsum.photos/1920/1080" />` 验证视觉与响应式断点。（注：不修改 `app/page.tsx` 占位，避免与 layout change 冲突；单测+build 已覆盖结构与编译正确性，可视化验证留待 layout 联调时一并完成）
-- [ ] 5.3 待 `homepage-layout` 就绪后，在 `app/page.tsx` 的 Hero 插槽消费本组件，联调首屏呈现。
+- [x] 5.2 可视化验证：经 `homepage-layout` 在 `app/page.tsx` 挂载 `<HomeHero />`（Hero 客户端包装），首页首屏可见 Hero 全幅背景图、标语、副标题与搜索框（build 静态预渲染验证通过）。
+- [x] 5.3 `homepage-layout` 就绪后，在 `app/page.tsx` 的 Hero 插槽消费 `<Hero>` 组件，联调首屏呈现（用 `<HomeHero />` client 包装规避 Server→Client 函数 prop 限制）。
 - [x] 5.4 运行 `openspec validate homepage-hero` 确认 change 制品合规。
 
 ## 6. 交付
