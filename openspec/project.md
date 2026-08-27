@@ -44,7 +44,7 @@ Wanderchina
 
 | 术语 | 含义 |
 |---|---|
-| Region Slot | 首页内容区块插槽的统称，由 `homepage-layout` 定义挂载契约（props：`hero` / `platformNav` / `destinations` / `community` / `aiFab`）。当前 `hero` 已实现并联调，`platformNav`/`destinations`/`community`/`aiFab` 待各自 change 实现 |
+| Region Slot | 首页内容区块插槽的统称，由 `homepage-shell` 定义挂载契约（props：`hero` / `feature-nav` / `city-grid` / `hot-posts` / `hot-spots` / `ai-launcher`）。当前 `hero` 已实现并联调，`feature-nav`/`city-grid`/`hot-posts`/`hot-spots`/`ai-launcher` 待各自 change 实现。早期命名（`homepage-layout` 的 `platformNav`/`destinations`/`community`/`aiFab`）已弃用 |
 | City Card | 城市导览卡片，`destinations` 区块的核心 UI 单元，含城市名、封面图、简要描述 |
 | Story | 旅行攻略条目，`community`/`hot-posts` 区块展示，含标题 / 封面图 / 摘要 / 标签 |
 | Hidden Spot | 小众景点，`hot-spots` 区块展示，强调深度 / 非旅游团体验 |

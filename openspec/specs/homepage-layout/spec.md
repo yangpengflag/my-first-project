@@ -1,4 +1,6 @@
-# homepage-layout Specification
+# homepage-layout Specification (DEPRECATED)
+
+> **历史归档**：本 spec 由早期 change `homepage-layout` 归档，其区域命名（platformNav / destinations / community）与"布局根壳 + RegionState 四态"理念已被新划分 **`homepage-shell`** 取代。新开发请以 `openspec/specs/homepage-shell/spec.md` 为准；本文件仅作历史追溯保留。
 
 ## Purpose
 TBD - created by archiving change homepage-layout. Update Purpose after archive.
