@@ -1,5 +1,8 @@
-## ADDED Requirements
+# homepage-hero Specification
 
+## Purpose
+TBD - created by archiving change homepage-hero. Update Purpose after archive.
+## Requirements
 ### Requirement: Hero 视觉与文案渲染
 首页 SHALL 在首屏渲染全幅品牌背景图、品牌标语 "Discover China Like a Local" 与副标题 "Your AI-powered travel companion for exploring China"，并通过叠层渐变保证白字可读性。
 
@@ -54,3 +57,4 @@ Hero 组件 SHALL 通过强类型 `HeroProps` 接收配置，所有字段强类�
 - **WHEN** 调用方传入 `backgroundImageUrl`
 - **THEN** 组件以 `next/image` `fill` + `priority` 渲染该图
 - **AND** `backgroundImageAlt` 可选，背景图默认 `aria-hidden`（装饰性）
+

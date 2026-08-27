@@ -1,5 +1,8 @@
-## ADDED Requirements
+# homepage-layout Specification
 
+## Purpose
+TBD - created by archiving change homepage-layout. Update Purpose after archive.
+## Requirements
 ### Requirement: 首页布局根壳与插槽顺序
 首页 SHALL 由 `HomepageLayout` 根壳组装，按固定顺序渲染区域：Hero → PlatformNav → Destinations → Community；AI 悬浮入口（AIFab）为独立挂载点，不参与流布局。
 
@@ -44,3 +47,4 @@
 #### Scenario: 首页首屏可见 Hero
 - **WHEN** 用户访问 `/`
 - **THEN** 首屏显示 Hero 全幅背景图、标语、副标题与 AI 搜索框
+
