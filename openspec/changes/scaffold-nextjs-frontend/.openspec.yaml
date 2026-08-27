@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-27
+goal: Replace the Vue 3 temp scaffold with the mandated Next.js 14 stack so
+  feature changes (homepage-hero, etc.) can be implemented.
