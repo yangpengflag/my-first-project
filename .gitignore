@@ -43,3 +43,6 @@ npm-debug.log*
 # Temp
 tmp/
 temp/
+
+# Playwright MCP server working dir (tool cache)
+.playwright-mcp/
