@@ -23,6 +23,7 @@ Wanderchina
 - **小众景点推荐**：非常规目的地推荐（Off-the-Beaten-Path Spots），强调深度体验。
 - **AI 行程规划助手**：常驻式 AI 入口（跨页面），辅助用户生成行程、回答旅行问题。
 - **用户模块**：
+  - **注册与登录**：邮箱注册 + BCrypt 密码登录；用户生命周期四态（`ACTIVE` / `LOCKED` / `DELETED` / `EMAIL_UNVERIFIED`）分别对应 `200` / `423` / `401` / `403`；邮箱验证为**免鉴权旁路**（破解「未验证用户被 403 挡住却无法登录去触发验证」的死锁）；连续失败 5 次锁定 15 分钟后自动解除；注销为软删除（行保留、邮箱不可复用）。响应禁止包含 `password_hash` / `salt` / `verification_code`，由白名单 DTO 保证。详见 `auth-module` spec。
   - **个人中心**：用户查看与编辑头像、昵称、个人简介、兴趣标签；他人公开资料页。
   - **消息通知**：互动通知系统（被点赞、被评论、被收藏），已读/未读标记，导航栏未读计数。
   - **站内信**：用户间一对一私信，会话列表与消息历史，未读消息提醒。
@@ -51,6 +52,7 @@ Wanderchina
 | AI Launcher | AI 行程助手入口悬浮按钮（aiFab），跨页面常驻于 layout，点击后打开对话界面 |
 | BFF | Browser-For-Frontend，前端 Next.js 薄层，负责 SSR 预取与接口聚合，不承担业务逻辑。当前尚未实现（`frontend/lib/backend.ts` 缺失，首页未接入后端） |
 | Capability Spec | OpenSpec 体系中一个独立能力单元的规格文档，对应 `openspec/specs/<capability>/spec.md` |
+| UserStatus | 用户生命周期四态，由 `auth-module` capability 定义：`ACTIVE` → `200`、`LOCKED` → `423`、`DELETED` → `401`、`EMAIL_UNVERIFIED` → `403`。状态在每个请求上实时回查，故锁定与注销即时生效 |
 | Notification | 互动通知条目，记录他人对当前用户内容的点赞/评论/收藏行为 |
 | Conversation | 站内信会话，两用户之间唯一的私信通道 |
 | Message | 站内信消息，属于某个 Conversation，含发送者、内容、已读状态 |

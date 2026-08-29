@@ -1,60 +1,141 @@
-# homepage-hero Specification
+# homepage-hero Spec
 
-## Purpose
-TBD - created by archiving change homepage-hero. Update Purpose after archive.
+> 首页骨架中 `hero` region 的内容契约。
+> 本 spec 定义 `frontend/app/regions/HeroSlot.tsx` 在「区块内容注入」阶段必须满足的最小契约：渲染恰好 1 个 `<h1>` 与 1 个 `<button>` 子节点；数据来自硬编码 TS 常量单对象；CTA 占位 `data-cta-href` 严格为 `#`；不破坏 BFF 边界。视觉设计、背景图、响应式、真实业务跳转与弹窗交互均由后续独立 capability 承载。
+
 ## Requirements
-### Requirement: Hero 视觉与文案渲染
-首页 SHALL 在首屏渲染全幅品牌背景图、品牌标语 "Discover China Like a Local" 与副标题 "Your AI-powered travel companion for exploring China"，并通过叠层渐变保证白字可读性。
 
-#### Scenario: 正常加载首屏
-- **WHEN** 用户访问首页根路由 `/`
-- **THEN** Hero 区在首屏可见，全幅背景图覆盖视口顶部区块
-- **AND** 背景图上方叠加 `from-black/60 to-transparent` 渐变层，标语与副标题白字清晰可读
-- **AND** 渲染标语与副标题，且搜索框显示 placeholder "Search destinations, tips, or ask AI..."
+### Requirement: hero region 必须渲染 1 个 `<h1>` 与至少 1 个 `<button>` 子节点
 
-#### Scenario: 背景图加载失败
-- **WHEN** `next/image` 背景图资源 404 或网络失败
-- **THEN** Hero 区显示兜底背景色 `bg-slate-800`（深色场景）避免白块
-- **AND** 文字叠层与文案仍正常渲染、保持可读
+> **homepage-visual-v1 修正**：原骨架阶段约定“恰好 1 个 button”（CTA），visual-v1 引入搜索按钮后，button 数量变为 ≥ 1。h1 约束不变。
 
-#### Scenario: 移动端窄屏渲染
-- **WHEN** 视口宽度 < `md` (768px)
-- **THEN** 文字内容居中对齐，标语使用 `text-5xl`，搜索框全宽堆叠在文案下方
-- **AND** 背景图保持 `fill` 覆盖且 `object-cover` 不被拉伸变形
+`HeroSlot` SHALL render a single root `<section data-region="hero">` containing exactly one `<h1>` element and at least one `<button>` element. The `<h1>` MUST carry non-empty `textContent` (the title); at least one `<button>` MUST carry a visible icon (SVG from lucide-react).
 
-#### Scenario: 桌面端宽屏渲染
-- **WHEN** 视口宽度 ≥ `lg` (1024px)
-- **THEN** 文字左对齐、垂直居中于左侧内容区，标语使用 `text-6xl`
-- **AND** 搜索框与提交按钮横向排列（input + button inline）
+#### Scenario: hero region 容器仍存在
 
-### Requirement: 搜索框交互
-Hero 搜索框 SHALL 为受控输入，非空查询提交时通过 `onSearch` 回调向上抛出 trim 后的查询字符串；本单元不实现搜索结果页或 AI 调用。
+- **GIVEN** `HeroSlot` 已按本变更改写
+- **WHEN** RTL 渲染 `<HeroSlot />`
+- **THEN** `container.querySelector('[data-region="hero"]')` 非 null
+- **AND** 该节点 tagName 为 `SECTION`
 
-#### Scenario: 用户输入并提交
-- **WHEN** 用户在搜索框输入非空查询并点击提交按钮（或按 Enter）
-- **THEN** 组件调用 `props.onSearch(query)` 回调并传入 trim 后的查询字符串
-- **AND** 搜索框 input 保持受控（value 由 `useState` 管理）
+#### Scenario: 1 个 `<h1>` 标题子节点
 
-#### Scenario: 空查询提交
-- **WHEN** 用户未输入任何内容（或仅空格）即点击提交
-- **THEN** 组件 SHALL NOT 调用 `onSearch`
-- **AND** 提交按钮保持可用状态，可对 input 施加 `focus` 与 `sr-only` 提示 "Please enter a search term"
+- **WHEN** RTL 渲染 `<HeroSlot />` 并查 `container.querySelectorAll('section[data-region="hero"] h1')`
+- **THEN** NodeList 长度恰好为 `1`
+- **AND** 该 `<h1>` 的 `textContent.trim().length > 0`
 
-#### Scenario: 键盘可达性
-- **WHEN** 用户使用 Tab 键聚焦到搜索框与提交按钮
-- **THEN** 两个元素均显示 `focus-visible` ring
-- **AND** 提交按钮含可访问名称（`aria-label="Search"` 或可见文字 "Search"）
+#### Scenario: 至少 1 个 `<button>` 子节点含 SVG 图标
 
-### Requirement: Hero 组件 Props 契约
-Hero 组件 SHALL 通过强类型 `HeroProps` 接收配置，所有字段强类型、无 `any`。
+- **WHEN** RTL 渲染 `<HeroSlot />` 并查 `container.querySelectorAll('section[data-region="hero"] button')`
+- **THEN** NodeList 长度 ≥ `1`
+- **AND** 至少 1 个 `<button>` 内含 `<svg>` 元素（lucide-react 图标）
+- **AND** 该 `<svg>` 内含 `path` / `line` / `circle` / `polyline` / `rect` 子元素（非空图标）
 
-#### Scenario: Props 默认值覆盖
-- **WHEN** 调用方传入 `headline` / `subheadline` / `searchPlaceholder`
-- **THEN** 组件渲染传入值而非默认值
-- **AND** 调用方未传入时，组件使用 spec 定义的英文默认文案
+---
 
-#### Scenario: 背景图经 Props 传入
-- **WHEN** 调用方传入 `backgroundImageUrl`
-- **THEN** 组件以 `next/image` `fill` + `priority` 渲染该图
-- **AND** `backgroundImageAlt` 可选，背景图默认 `aria-hidden`（装饰性）
+### Requirement: hero 数据来源必须为硬编码 TS 常量单对象
 
+The hero content SHALL be sourced from a hard-coded TypeScript constant at `frontend/app/regions/hero.data.ts`. The component MUST NOT fetch data from `lib/backend.ts`, any HTTP endpoint, or any local JSON / config file.
+
+#### Scenario: 不存在 fetch / lib/backend 引用
+
+- **WHEN** `grep -E "fetchFromBackend|fetch\\(|import.*lib/backend" frontend/app/regions/HeroSlot.tsx`
+- **THEN** 输出为空（无任何匹配行）
+
+#### Scenario: data 文件 default-export 单对象
+
+- **GIVEN** `frontend/app/regions/hero.data.ts` 存在
+- **WHEN** 静态 import 其 default export
+- **THEN** 类型为 `HeroContent`（含字符串字段 `title`、`ctaLabel`、`ctaHref`）
+- **AND** `title.trim().length > 0` 且 `ctaLabel.trim().length > 0`
+
+---
+
+### Requirement: CTA 占位锚点必须为严格 `#`
+
+> **homepage-visual-v1 说明**：`ctaHref` / `ctaLabel` 字段保留在 data 中作为未来 CTA 按钮的预留，visual-v1 当前用搜索框替代 CTA，组件不渲染这两个字段，但数据契约仍然有效。
+
+The hero CTA's placeholder link target SHALL be exactly the string `"#"`. This change MUST NOT introduce any business route path (e.g., `/search`, `/flights`).
+
+#### Scenario: ctaHref 严格等于 `#`
+
+- **GIVEN** `hero.data.ts` 已 import
+- **WHEN** 读取 default export 的 `ctaHref` 字段
+- **THEN** 值 `=== "#"`
+
+#### Scenario: 未引入业务路由文件
+
+- **WHEN** `find frontend/app -mindepth 2 -name 'page.tsx'`（排除 `app/page.tsx`）
+- **THEN** 输出为空
+
+---
+
+### Requirement: BFF 边界守护必须保持
+
+This change SHALL NOT introduce `app/api/**/route.ts` files, MUST NOT modify `lib/backend.ts`, and MUST NOT introduce new npm dependencies.
+
+#### Scenario: 仍无 Route Handler
+
+- **WHEN** `find frontend/app -name 'route.ts' -o -name 'route.tsx'`
+- **THEN** 输出为空
+
+#### Scenario: lib/backend 未变更
+
+- **WHEN** 比对 `git show main:frontend/lib/backend.ts` 与本变更工作树同文件
+- **THEN** 内容字节级一致
+
+#### Scenario: package.json 依赖未变
+
+- **WHEN** 比对本变更前后的 `frontend/package.json` 的 `dependencies` 与 `devDependencies` 字段
+- **THEN** 两份列表完全一致
+
+---
+
+### Requirement: Hero 容器必须渲染全幅风景摄影 + 大标题 + 搜索框（homepage-visual-v1 新增）
+
+`HeroSlot` SHALL render a full-width section with a background image (picsum.photos placeholder), gradient overlay for text readability, a large display heading (Inter 48px+), subtitle, and a functional search component (`SearchSuggest`). The search component SHALL accept user input, display real-time suggestions, and support form submission to navigate to the search results page. The section MUST use `bg-cover` and `bg-center` classes for the background image.
+
+#### Scenario: Hero 为全幅 section 含背景图
+
+- **WHEN** RTL 渲染 `<HeroSlot />`
+- **THEN** `container.querySelector('[data-region="hero"]')` 非 null
+- **AND** 该 section 的 className 含 `bg-cover` 或 `bg-[url(...)]`
+- **AND** section 高度 ≥ 500px（className 含 `h-[...]`）
+
+#### Scenario: Hero 渲染 h1 标题
+
+- **WHEN** RTL 渲染 `<HeroSlot />`
+- **THEN** `container.querySelector('h1')` 非 null
+- **AND** h1 的 className 含 `text-5xl` 或 `text-6xl`（48px+ 字号）
+- **AND** h1 的 textContent 非空
+
+#### Scenario: Hero 渲染功能性搜索组件
+
+- **WHEN** RTL 渲染 `<HeroSlot />`
+- **THEN** `container.querySelector('input[type="text"]')` 非 null
+- **AND** input 的 placeholder 属性非空
+- **AND** input 旁有 `<button>` 含搜索图标（lucide-react Search）
+- **AND** 搜索框被 `<form>` 或等效元素包裹（支持 Enter 提交）
+
+#### Scenario: Hero 搜索框不直接 import fetch 或 lib/backend
+
+- **WHEN** `grep -E "fetchFromBackend|fetch\\(|import.*lib/backend" frontend/app/regions/HeroSlot.tsx`
+- **THEN** 输出为空（HeroSlot.tsx 本身不含网络调用）
+
+---
+
+### Requirement: Hero 数据来源必须包含背景图 URL 和搜索占位文本（homepage-visual-v1 新增）
+
+The hero content SHALL be sourced from `frontend/app/regions/hero.data.ts` with expanded fields: `title`, `subtitle`, `ctaLabel`, `ctaHref`, `searchPlaceholder`, and `backgroundImage`. The `backgroundImage` MUST be a valid URL (picsum.photos placeholder).
+
+#### Scenario: data 文件包含背景图 URL
+
+- **WHEN** 静态 import `hero.data.ts` 的 default export
+- **THEN** `backgroundImage` 字段为非空字符串
+- **AND** `backgroundImage` 以 `http://` 或 `https://` 开头
+
+#### Scenario: data 文件包含搜索占位文本
+
+- **WHEN** 静态 import `hero.data.ts` 的 default export
+- **THEN** `searchPlaceholder` 字段为非空字符串
+- **AND** `searchPlaceholder.trim().length > 0`
