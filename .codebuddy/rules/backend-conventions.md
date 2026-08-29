@@ -11,7 +11,7 @@ trigger: always_on
 controller/   ← HTTP 层：参数校验、调用 service、构造 response
 service/      ← 业务逻辑：不感知 HTTP，抛自定义 RuntimeException
 repository/   ← 数据访问：Spring Data JPA interface
-entity/       ← JPA 实体：继承 BaseEntity
+common/       ← 跨模块共享内核（BaseEntity 等）；JPA 实体继承它并置于 <feature>/domain/
 dto/          ← Request DTO（record）+ Response DTO（class extends BaseResponse）
 exception/    ← 自定义异常 + GlobalExceptionHandler
 filter/       ← Servlet Filter（横切关注点）
