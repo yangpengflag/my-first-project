@@ -71,7 +71,9 @@ Wanderchina
 | 前端样式 | Tailwind CSS 4 + shadcn/ui (base-nova / neutral) + lucide-react | shadcn 提供 a11y / 设计 token / Radix 实现；lucide 统一图标 |
 | 前端构建 | Next.js 14 内建 (`frontend/`) | dev server 起于 3000（8080 为后端，被占时自动 fallback 到下一个可用端口） |
 | 前端测试 | Vitest + @testing-library/react + jsdom | Server Component 不可直接 render，需抽为 Client Component 后覆盖 |
-| BFF 调用 | **尚未实现** | 规划为 `frontend/lib/backend.ts`（`import 'server-only'`），Server Component 中用 `fetchFromBackend('/api/...')` 调后端；当前首页 `app/page.tsx` 未接入后端，Hero 联调仅用占位回调 |
+| BFF 调用 | `frontend/lib/backend.ts` | 薄类型层：传输委托 `lib/auth/client.ts`（Bearer 注入 / 401 静默续期重放 / 空响应体处理 / 网络错误与业务错误区分），DTO 由 openapi 生成物派生。**注**：此前记载的「尚未实现」已过期——`lib/auth/client.ts` 实为已落地的 BFF 薄层，本次 change 补上类型层并收敛为单一 HTTP 栈 |
+| API 契约 | `springdoc-openapi` 2.8.8 + `openapi-typescript` 7.13 | 后端注解产出 `/v3/api-docs`（**仅非 prod**）；前端由进仓快照 `frontend/openapi/openapi.json` 生成 `lib/api.generated.ts`（生成物禁止手改）。同步用 `npm run openapi:sync`、漂移检查用 `npm run openapi:drift` |
+| 前端 mock | `msw` 2.15 | 单测 / 组件测拦截 `fetch`，handlers 由 `openapi.json` 派生并覆盖四态与 `429`；无需后端起服。**不**使用 Prism（实测无法消费本契约，且不覆盖错误分支） |
 | 环境变量 | `frontend/.env.local`（不入仓） | `BACKEND_URL=http://localhost:8080` |
 | Node 运行时 | Node.js ≥ 20.19 | Next.js 14 要求 |
 
