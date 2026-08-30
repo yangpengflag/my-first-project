@@ -15,7 +15,7 @@
 - `status`：枚举，取值域严格限定为 `DRAFT` / `PUBLISHED`。
 - `summary`：SHALL NOT 作为存储字段存在；读取时由 `content` 派生（见「摘要派生」Requirement）。
 
-`Post` SHALL 在其类上声明 `@SQLRestriction("deleted_at IS NULL")`，使所有查询自动排除软删除行（与 `User` 故意省略该注解相反，因 `User` 鉴权需查已删行）。软删除行本身由 BaseEntity 的 `deletedAt` 承载，本 capability 不引入物理删除。
+`Post` 的软删除行 SHALL 通过<b>仓储层显式过滤</b>排除：`PostRepository` 提供 `findByStatusAndDeletedFalse` / `findByAuthorIdAndDeletedFalse` / `findByIdAndDeletedFalse`，使所有对外查询自动排除软删除行（与 `User` 故意不加过滤相反，因 `User` 鉴权需查已删行）。软删除标志由 `BaseEntity.deleted`（布尔，默认 `false`）承载，本 capability 不引入物理删除。
 
 #### Scenario: 创建合法帖子成功落库
 
@@ -30,9 +30,9 @@
 
 #### Scenario: 软删除帖子自动从查询中消失
 
-- **GIVEN** 存在已软删除（`deletedAt` 非空）的 PUBLISHED 帖子
+- **GIVEN** 存在已软删除（`deleted` 为 `true`）的 PUBLISHED 帖子
 - **WHEN** 通过列表或详情查询该帖子
-- **THEN** 该帖子不出现在任何公开或私有列表 / 详情结果中（`@SQLRestriction` 生效）
+- **THEN** 该帖子不出现在任何公开或私有列表 / 详情结果中（`AndDeletedFalse` 过滤生效）
 
 ---
 
