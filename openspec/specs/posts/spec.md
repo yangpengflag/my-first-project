@@ -20,7 +20,7 @@
 #### Scenario: 创建合法帖子成功落库
 
 - **WHEN** 携带有效令牌提交 `POST /api/posts` 含 `{ "title": "Top 5 hikes near Chengdu", "content": "# ...", "tags": ["Hiking", "Sichuan"], "status": "DRAFT" }`
-- **THEN** 返回 `201 Created`，响应体含非空 `id` 与 `authorId` 等于令牌主体
+- **THEN** 返回 `201 Created`，响应体含非空 `id` 与 `author_id` 等于令牌主体
 - **AND** `tags` 在库中以小写 `["hiking","sichuan"]` 存储
 
 #### Scenario: 超限字段被拒
@@ -54,14 +54,14 @@
 
 ### Requirement: 公开帖子列表（含作者展示信息）
 
-`GET /api/posts` SHALL 返回 PUBLISHED 帖子分页列表，默认按 `created_at` 倒序；结果项（`PostSummary`）SHALL 包含 `authorName` 与 `authorAvatarUrl`，由 `authorId` 一次批量解析（非 N+1）。分页参数：`page`（默认 0）、`size`（默认 20，上限 50，超限以 50 截断）。
+`GET /api/posts` SHALL 返回 PUBLISHED 帖子分页列表，默认按 `created_at` 倒序；结果项（`PostSummary`）SHALL 包含 `author_name` 与 `author_avatar_url`，由 `author_id` 一次批量解析（非 N+1）。分页参数：`page`（默认 0）、`size`（默认 20，上限 50，超限以 50 截断）。
 
 #### Scenario: 列表仅含已发布且携带作者信息
 
 - **GIVEN** 存在 3 篇 PUBLISHED 与 2 篇 DRAFT 帖子
 - **WHEN** `GET /api/posts` 不带鉴权
 - **THEN** 返回 `200 OK`，仅含 3 篇 PUBLISHED
-- **AND** 每项含 `authorName`（=作者 `User.displayName`）与 `authorAvatarUrl`（=作者 `User.avatarUrl`）
+- **AND** 每项含 `author_name`（=作者 `User.displayName`）与 `author_avatar_url`（=作者 `User.avatarUrl`）
 
 #### Scenario: 分页 size 上限截断
 
@@ -72,7 +72,7 @@
 
 - **GIVEN** 某 PUBLISHED 帖子的作者已被软删除（`DELETED`）
 - **WHEN** 该帖子出现在列表
-- **THEN** 帖子照常展示，`authorName` 回退为占位文案（如 `"[unknown user]"`），不泄露作者 `email` 等敏感字段
+- **THEN** 帖子照常展示，`author_name` 回退为占位文案（如 `"[unknown user]"`），不泄露作者 `email` 等敏感字段
 
 ---
 
@@ -83,7 +83,7 @@
 #### Scenario: 成功获取详情
 
 - **WHEN** `GET /api/posts/{已发布帖子id}` 不带鉴权
-- **THEN** 返回 `200 OK`，含 `title` / `content` / `coverImageUrl` / `tags` / `status` / `authorName` / `authorAvatarUrl` / `summary` / `createdAt` / `updatedAt`
+- **THEN** 返回 `200 OK`，含 `title` / `content` / `cover_image_url` / `tags` / `status` / `author_name` / `author_avatar_url` / `summary` / `created_at` / `updated_at`
 
 #### Scenario: 草稿 / 已删返回 404
 
@@ -112,7 +112,7 @@
 
 ### Requirement: 我的帖子（需鉴权）
 
-`GET /api/posts/me` SHALL 返回当前令牌主体用户的全部帖子（含 `DRAFT` 与 `PUBLISHED`），`authorId` 由令牌主体推导；需鉴权，未鉴权返回 `401 UNAUTHENTICATED`。
+`GET /api/posts/me` SHALL 返回当前令牌主体用户的全部帖子（含 `DRAFT` 与 `PUBLISHED`），`author_id` 由令牌主体推导；需鉴权，未鉴权返回 `401 UNAUTHENTICATED`。
 
 #### Scenario: 返回当前用户所有状态帖子
 
@@ -146,7 +146,7 @@
 
 ### Requirement: 响应安全边界——白名单与敏感字段隔离
 
-`PostResponse` / `PostSummary` SHALL 采用白名单 DTO 输出，字段严格限定为：`id` / `title` / `content` / `coverImageUrl` / `tags` / `status` / `authorId` / `authorName` / `authorAvatarUrl` / `summary` / `createdAt` / `updatedAt`。任何响应 SHALL NOT 包含 `deletedAt`；作者信息 SHALL 仅限 `displayName` + `avatarUrl`，不得泄露 `email` 等凭证 / 隐私字段。
+`PostResponse` / `PostSummary` SHALL 采用白名单 DTO 输出，字段严格限定为：`id` / `title` / `content` / `cover_image_url` / `tags` / `status` / `author_id` / `author_name` / `author_avatar_url` / `summary` / `created_at` / `updated_at` / `request_id`（顶层信封）。任何响应 SHALL NOT 包含 `deleted_at`；作者信息 SHALL 仅限 `display_name` + `avatar_url`，不得泄露 `email` 等凭证 / 隐私字段。所有成功与错误响应均携带顶层 `request_id`（源自 `RequestIdFilter`），契约以 `frontend/openapi/openapi.json` 为准。
 
 #### Scenario: 详情响应不含 deleted_at
 
@@ -155,6 +155,6 @@
 
 #### Scenario: 作者信息不含邮箱
 
-- **WHEN** 列表 / 详情返回含 `authorName` 的帖子
+- **WHEN** 列表 / 详情返回含 `author_name` 的帖子
 - **THEN** 响应 JSON 中**不**出现作者 `email` 字段
 

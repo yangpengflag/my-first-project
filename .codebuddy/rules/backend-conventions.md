@@ -8,13 +8,14 @@ trigger: always_on
 ## 分层架构
 
 ```
-controller/   ← HTTP 层：参数校验、调用 service、构造 response
+controller/   ← HTTP 层：参数校验、委托 service、构造 response
 service/      ← 业务逻辑：不感知 HTTP，抛自定义 RuntimeException
 repository/   ← 数据访问：Spring Data JPA interface
-common/       ← 跨模块共享内核（BaseEntity 等）；JPA 实体继承它并置于 <feature>/domain/
-dto/          ← Request DTO（record）+ Response DTO（class extends BaseResponse）
+domain/       ← JPA 实体：继承 BaseEntity（按模块组织，如 auth/domain、posts/domain）
+api/          ← Request DTO（record）+ Response DTO（class extends BaseResponse）（按模块组织，如 auth/api、posts/api）
+dto/response/ ← 共享响应基类 BaseResponse（信封自带 request_id）
 exception/    ← 自定义异常 + GlobalExceptionHandler
-filter/       ← Servlet Filter（横切关注点）
+filter/       ← Servlet Filter（横切关注点，含 RequestIdFilter）
 config/       ← Spring 配置类
 ```
 
@@ -22,7 +23,8 @@ config/       ← Spring 配置类
 
 ## Controller
 
-- 只做：参数校验（`@Valid`）+ 委托 service + 从 request 取 requestId + 构造 Response
+- 只做：参数校验（`@Valid`）+ 委托 service + 构造 Response
+- `request_id` 由 `RequestIdFilter` 每请求注入 MDC，`BaseResponse` 构造时自动读取，controller 无需显式传递
 - 不写业务逻辑、不直接操作 repository
 - 返回 `ResponseEntity<XxxResponse>`，XxxResponse 继承 `BaseResponse`
 
@@ -55,6 +57,6 @@ config/       ← Spring 配置类
 
 ## 横切关注点
 
-- `RequestIdFilter`：每请求生成 UUID → request attribute + MDC
+- `RequestIdFilter`（已实现于 `common/filter/RequestIdFilter.java`）：每请求生成 UUID → request attribute + MDC；`BaseResponse` 构造时据此写入 `request_id`
 - `SensitiveFieldFilter`：响应中移除 password_hash / salt 等敏感字段
 - 新增 Filter 时用 `@Order` 显式声明优先级

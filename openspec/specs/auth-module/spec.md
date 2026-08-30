@@ -177,7 +177,7 @@
 
 - **GIVEN** 构造一个所有字段均填满的 `User` 实体（含 `passwordHash`、`salt`、`verificationCode`）
 - **WHEN** 通过 Jackson 序列化 `UserResponse.from(user)`
-- **THEN** 输出 JSON 的键集合**严格等于**白名单集合 `{id, email, displayName, avatarUrl, status, createdAt}`
+- **THEN** 输出 JSON 的键集合**严格等于**白名单集合 `{id, email, display_name, avatar_url, status, created_at, request_id}`
 - **AND** 输出中不含任何上述敏感键名（同时覆盖 snake_case 与 camelCase 两种命名）
 
 #### Scenario: 实体新增敏感字段时测试失败（负向验证）
