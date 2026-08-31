@@ -59,24 +59,42 @@ trigger: always_on
 
 ## 分页响应格式
 
-列表接口 SHOULD 返回以下结构：
+列表接口信封始终包含 `items` / `next_cursor` / `has_more`：
 
 ```json
 {
   "request_id": "...",
   "items": [...],
-  "total": 100,
+  "next_cursor": "string|null",
+  "has_more": true
+}
+```
+
+offset 模式（按计数排序）额外包含 `page` / `size` / `total`：
+
+```json
+{
+  "request_id": "...",
+  "items": [...],
+  "next_cursor": null,
+  "has_more": false,
   "page": 1,
-  "size": 20
+  "size": 20,
+  "total": 100
 }
 ```
 
 - `items`：当前页数据数组
-- `total`：总记录数
-- `page`：当前页码（从 1 开始）
+- `next_cursor`：游标令牌，仅 `latest` 排序可用；为空表示无下一页
+- `has_more`：是否还有下一页（cursor 与 offset 模式通用）
+- `page`：当前页码（从 1 开始，仅 offset 模式）
 - `size`：每页条数
+- `total`：总记录数（仅 offset 模式）
 
-请求参数：`?page=1&size=20`（默认 page=1, size=20, 最大 size=100）
+请求参数：
+- `sort=latest`（默认，cursor 翻页）/ `sort=top`（up_vote_count DESC）/ `sort=most_commented`（comment_count DESC，均为 offset 翻页）
+- `cursor`：仅 `latest` 模式使用的不透明令牌（服务端编码为 `base64(createdAtISO + "|" + id)`），回传以获取下一页
+- `?page=1&size=20`（默认 page=1, size=20, 最大 size=100，超出截断）
 
 ## 前端 API 客户端约定
 
