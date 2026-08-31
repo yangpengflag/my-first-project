@@ -40,5 +40,5 @@
 ## 6. 验证
 
 - [x] 6.1 后端 `mvn test` 全绿（posts 包 25/25 通过）
-- [x] 6.2 前端 `type-check` 通过；`npm test` 全量实跑通过（21 文件 / 150 用例，含 `lib/posts/api.test.ts`、`PostCard.test.tsx`、`PostList.test.tsx`）；`build` 仍待本地复核
+- [x] 6.2 前端 `type-check` 通过；`npm test` 全量实跑通过（21 文件 / 150 用例）；`npm run build` 通过（`next build` 编译+类型检查+13 路由静态生成均无报错）
 - [x] 6.3 `openapi:drift` 通过（见 5.2）
