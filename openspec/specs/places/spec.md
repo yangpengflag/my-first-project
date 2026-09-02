@@ -54,8 +54,9 @@
 - `rating`：**可选** `number`（0–5），由 AI 爬虫估算产出，可空；本期**无评价/评论系统**，字段缺失时 UI SHALL NOT 展示评分。
 - `featured`：布尔，编辑/爬虫置信精选，驱动首页 `hot-spots` Top N（与 `viewCount` 排名正交）。
 - `hiddenGem`：布尔，标记 off-the-beaten-path / 小众深度体验（对应 `project.md` 的 Hidden Spot 语义）。
+- `status`：枚举 `DRAFT` / `PUBLISHED`（默认 `PUBLISHED`）。公开读（列表 / 详情）仅返回 `PUBLISHED`；`DRAFT` 不进列表、详情返回 `404`；写 API 可置 `DRAFT`。`HIDDEN` / 精选由既有 `hiddenGem` / `featured` 承载，不进 `status`。
 
-> 本期 Spot **不包含** `bookmarkCount` 等收藏统计：收藏是 post 专属能力（`post_bookmarks`），Spot 收藏需独立子系统，不在本 capability 范围内（如有需要另起 change）。
+> Spot 收藏由 `spot_bookmarks` 独立子系统承载（见「景点收藏」Requirement），计数走实时聚合（Top N 量小）不冗余存储，`bookmarkCount` 字段不持久化。
 
 #### Scenario: 重名 POI 各自可寻址
 
@@ -169,11 +170,109 @@
 
 ---
 
+### Requirement: 景点写 API（Spot 写）
+
+系统 SHALL 提供认证写端点，由登录用户（JWT）创建 / 更新景点 POI：
+
+- `POST /api/spots` → `SpotDetail`（201）：请求体 `CreateSpotRequest`（`nameEn` / `nameZh` 必填，`citySlug` 必填，其余可选）。
+- `PUT /api/spots/{slug}` → `SpotDetail`：补丁式更新（`UpdateSpotRequest` 全部字段 optional，null = 保留原值），slug 不可变。
+- `slug` 由 `{citySlug}-{slugify(nameEn)}` 推导；冲突 → `409`，`error.code="SPOT_SLUG_CONFLICT"`。
+- 鉴权：端点受 `authenticated()` 覆盖，控制器取 `userId` 仅作鉴权凭证，**不持久化**到 Spot（CMS POI 无需归属）。
+- 校验：`citySlug` 经 `CityService.findBySlug` 存在，否则 `CITY_NOT_FOUND`。
+- 写路径不触发 `viewCount`（仅详情 GET 触发计数）。
+
+#### Scenario: 未带 token 创建被拒
+
+- **WHEN** `POST /api/spots`（无 `Authorization`）
+- **THEN** 返回 `401`，`error.code="UNAUTHENTICATED"`
+
+#### Scenario: slug 冲突 409
+
+- **GIVEN** 已存在 `hangzhou-west-lake`
+- **WHEN** 以相同 `citySlug` + `nameEn` 再次 `POST /api/spots`
+- **THEN** 返回 `409`，`error.code="SPOT_SLUG_CONFLICT"`
+
+#### Scenario: 城市不存在
+
+- **WHEN** `POST /api/spots` 携带不存在的 `citySlug`
+- **THEN** 返回 `404`，`error.code="CITY_NOT_FOUND"`
+
+#### Scenario: 部分更新保留未传字段
+
+- **WHEN** `PUT /api/spots/hangzhou-west-lake` 仅传 `descriptionEn`
+- **THEN** 其余字段保持原值，`slug` 不变
+
+---
+
+### Requirement: 景点收藏（Spot Bookmark）
+
+系统 SHALL 提供景点收藏能力（参考 `post_bookmarks`），由登录用户 toggle / 查询 / 列表：
+
+- `POST /api/spots/{slug}/bookmark` → toggle（鉴权；不存在的 slug → `SPOT_NOT_FOUND`）。
+- `GET /api/spots/{slug}/bookmark` → `SpotBookmarkStatusResponse`（`spotSlug` + `bookmarked`，鉴权）。
+- `GET /api/spot-bookmarks?page=&size=` → `Page<SpotSummary>`（按收藏时间倒序，鉴权）。
+- 存储：`spot_bookmarks` 表（`spot_slug` + `user_id` + 唯一 `(spot_slug, user_id)`）；计数由实时聚合 `SELECT spot_slug, COUNT(*) FROM spot_bookmarks GROUP BY spot_slug` 得出，不冗余存储。
+
+#### Scenario: 未鉴权收藏被拒（401 回归守护）
+
+- **WHEN** `POST` / `GET /api/spots/{slug}/bookmark` 或 `GET /api/spot-bookmarks` 无 token
+- **THEN** 返回 `401`，`error.code="UNAUTHENTICATED"`
+
+#### Scenario: 切换收藏状态
+
+- **WHEN** 对同一 slug 连续 `POST /api/spots/{slug}/bookmark` 两次
+- **THEN** 第一次 `bookmarked=true`，第二次 `bookmarked=false`（幂等切换）
+
+#### Scenario: 收藏列表按时间倒序
+
+- **GIVEN** 用户先后收藏 slugA、slugB
+- **WHEN** `GET /api/spot-bookmarks`
+- **THEN** 结果首项为 slugB（最近收藏）
+
+---
+
+### Requirement: 景点排行榜（Spot Ranking）
+
+系统 SHALL 提供公开排行榜端点：
+
+- `GET /api/spots/ranking?type=rating|popular|bookmarks&limit=10`（默认 `popular`，`limit` 默认 10、上限 50）。
+- 排序：
+  - `rating`：`ORDER BY rating IS NULL ASC, rating DESC`（无评分沉底；MySQL 不支持 `NULLS LAST`）。
+  - `popular`：`ORDER BY view_count DESC`。
+  - `bookmarks`：`LEFT JOIN (SELECT spot_slug, COUNT(*) cnt FROM spot_bookmarks GROUP BY spot_slug) b`，`ORDER BY COALESCE(b.cnt,0) DESC`。
+- 仅返回 `PUBLISHED`；返回 `SpotSummary[]`（截断 `limit`）。
+- 公开免鉴权（被 `GET /api/spots/*` permitAll 覆盖）。
+
+#### Scenario: 默认按热门
+
+- **WHEN** `GET /api/spots/ranking`（不带参数）
+- **THEN** 返回 `view_count` 降序的 `SpotSummary[]`，默认最多 10 条
+
+#### Scenario: rating 无评分沉底
+
+- **GIVEN** 部分 POI `rating` 为 `null`
+- **WHEN** `GET /api/spots/ranking?type=rating`
+- **THEN** 有评分者按 `rating` 降序在前，`rating=null` 者排末尾
+
+#### Scenario: 收藏榜按实时聚合
+
+- **GIVEN** slugA 被 3 个用户收藏、slugB 被 1 个用户收藏
+- **WHEN** `GET /api/spots/ranking?type=bookmarks`
+- **THEN** 首位为 slugA
+
+#### Scenario: limit 钳制
+
+- **WHEN** `GET /api/spots/ranking?limit=200`
+- **THEN** 返回条数不超过 50
+
+---
+
 ## Cross-capability dependencies
 
-### Post 地点关联（`post-location-tagging`，未落地）
+### Post 地点关联（`post-location-tagging`）
 
-- `posts` 实体 SHALL 增量可选 `city_id`（单城市语境）与 `spot_ids`（`string[]`，多 POI）；`city_id` 存城市 slug，`spot_ids` 存 Spot 复合 slug。
-- `GET /api/cities/{slug}` 与 `GET /api/spots/{slug}` 的 `related_posts` / `postCount` 依赖该能力；其落地前分别为**空列表 / 0**（相关 Requirement 的 Scenario 已按此定义）。
-- 落地后由 post-location-tagging change 增量更新 `posts` spec，并通过 `POST /api/posts` 接受可选 `city_id` / `spot_ids`、`GET /api/posts` 支持 `cityId` / `spotId` 过滤。
+- `posts` 与 Spot 的关联 SHALL 由 `post_spots` 关联表承载（非 `spot_ids` JSON 列）：`post_spots(post_id, spot_slug)`，唯一 `(post_id, spot_slug)`，索引 `idx_post_spots_spot`。
+- `POST /api/posts` / `PUT /api/posts` SHALL 接受 `spotSlugs`（`List<String>`，Spot 复合 slug），`PostService` 写入 / 刷新 `post_spots`（先删后插）。
+- `GET /api/posts` SHALL 支持 `cityId` / `spotId` 过滤：`spotId` 经 `JOIN post_spots` 反查（删 `spot_ids` 列后原 JSON 过滤已移除）。
+- `GET /api/cities/{slug}` 与 `GET /api/spots/{slug}` 的 `related_posts` / `postCount` 仍依赖该能力；其落地前分别为**空列表 / 0**。
 
