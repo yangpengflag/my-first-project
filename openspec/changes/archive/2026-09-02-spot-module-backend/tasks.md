@@ -47,4 +47,4 @@
 - [x] 6.1 后端 `mvn test` 全绿（311 tests, 0 fail）；前端 `type-check`/`tests`(215)/`build` 全绿
 - [x] 6.2 `npm run openapi:sync` + `openapi:gen` + `openapi:drift`（后端起 8080；本次 review 修复均为内部行为，未改契约，快照已含新增端点/`status`/`spotSlugs` 零 drift）
 - [x] 6.3 增量 `places` spec（Spot 写/收藏/排行 Requirement）+ `project.md` 放开 CMS 写 API out-of-scope
-- [ ] 6.4 提交 backend/frontend submodule 指针；父仓归档本 change
+- [x] 6.4 提交 backend(`475ff6f`)/frontend(`6522a78`) submodule；父仓提升指针(`7776e6e`)+归档(`9d8cfb0`)
