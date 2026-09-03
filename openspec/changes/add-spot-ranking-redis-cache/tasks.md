@@ -36,4 +36,4 @@
 
 - [x] 6.1 `mvn test` 全绿（`JAVA_HOME=D:\Programs\java17`，全路径 mvn；确保无残留 `next dev` / 8080 占用进程）。
 - [ ] 6.2 本地起 Redis 冒烟：首次请求回源落缓存 → 二次命中不查库 → 修改景点 / 切换收藏后下个请求即最新 → 停 Redis 后端点仍 200（fail-safe）。（手动验证）
-- [ ] 6.3 后端子仓 commit；父仓 bump submodule 指针；按需在 README 补"本地启用缓存（redis-server + 开关）"说明。
+- [x] 6.3 后端子仓 commit；父仓 bump submodule 指针；按需在 README 补"本地启用缓存（redis-server + 开关）"说明。
