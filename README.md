@@ -117,7 +117,22 @@ my-first-project/                  ← 父仓（OpenSpec 管理）
     └── plans/                     # 实施计划
 ```
 
-## 参考
+## 运维与功能开关
+
+### 景点排行榜缓存（Redis）
+
+`GET /api/spots/ranking` 由 Redis 缓存提供（Cache-Aside，TTL 5 分钟）。详见设计文档
+`openspec/changes/archive/2026-09-03-add-spot-ranking-redis-cache/design.md`。
+
+- **本地依赖 Redis**：启用缓存需本地运行 Redis（`redis-server`，或 `docker run -p 6379:6379 redis:7`）。
+  连接参数见 `backend/src/main/resources/application.yml` 的 `spring.data.redis`。
+- **热停开关**：`app.ranking-cache.enabled`（默认 `true`）。置 `false` 时直接走数据库、
+  行为与原实现逐字节等价，不依赖 Redis——可作为 Redis 不可用时的兜底或灰度回滚手段。
+- **失效策略**：景点写操作（创建 / 更新）与收藏切换会即时清除相关排行榜缓存，
+  下个请求即返回最新数据；仅浏览量变化不触发失效，热门榜最多滞后 1 个 TTL。
+- **可用性兜底**：Redis 连接异常 / 超时（500ms）时自动回退数据库，接口不会返回 5xx。
+
+### 参考
 
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) — 规格驱动开发框架
 - [Superpowers](https://github.com/obra/superpowers) — 可组合技能框架与方法论
